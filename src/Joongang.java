@@ -57,7 +57,7 @@ public class Joongang {
 		
 		//페이지마다의 URL로 Dom객체
 			if(!crawlURL.contains("tt")) return art;
-			this.doc = getDOM(crawlURL);
+			this.doc = getDOM("http://www.imdb.com/title/"+crawlURL);
 			Element list = doc.body();
 			
 			//한 페이지마다 기사 10개
@@ -79,48 +79,46 @@ public class Joongang {
 			
 						
 			//select css query
-			
+
 			url = crawlURL;
 			title = list.select("#title-overview-widget > div.vital > div.title_block > div > div.titleBar > div.title_wrapper > h1").text().replace("&nbsp;", "");
 			if (title.contains("(")) title = title.substring(0,title.indexOf("(")-1);
 			else title = title.substring(0,title.length()-1);
+			System.out.println((Launch.count+1)+": "+title);
 			try{
 				originalTitle  = list.select("#title-overview-widget > div.vital > div.title_block > div > div.titleBar > div.title_wrapper > div.originalTitle").text().replace(" (original title)", "");
 			} catch(Exception e) {
 				originalTitle="";
 			}
 			try {
-//				genres = list.select("").toString();
+				genres = list.select("div[itemprop=genre] > a").text();
 				story = list.select("#title-overview-widget > div.plot_summary_wrapper > div.plot_summary > div.summary_text").text();
-//				country = list.select("").toString();
-//				alsoKnown = list.select("").toString();
+//				country = list.select("a[]").text();
 				rate = Float.parseFloat(list.select("#title-overview-widget > div.vital > div.title_block > div > div.ratings_wrapper > div.imdbRating > div.ratingValue > strong > span").text());
 				rateCount = Integer.parseInt(list.select("#title-overview-widget > div.vital > div.title_block > div > div.ratings_wrapper > div.imdbRating > a > span").text().replace(",",""));
 				year = list.select("#titleUserReviewsTeaser > div > span > div.comment-meta > meta").attr("content");
-//				category = list.select("#title-overview-widget > div.vital > div.title_block > div > div.titleBar > div.title_wrapper > div > a:nth-child(8)").toString();	
+				category = list.select("a[title=See more release dates]").text().contains("TV")?"TV":"Movie";	
 			} catch(Exception e) {
-				System.out.println("error");
+				Launch.error++;
 			}
 						
 						
 			//article객체에 전부 setting
-			art.setUrl(url);
+			art.setUrl(crawlURL);
 			art.setTitle(title);
 			art.setOriginalTitle(originalTitle);
-//			art.setGenres(genres);
+			art.setGenres(genres);
 			art.setStory(story);
-//			art.setCountry(country);
-//			art.setAlsoKnown(alsoKnown);
 			art.setRate(rate);
 			art.setRateCount(rateCount);
 			art.setYear(year);
-//			art.setCategory(category);
+			art.setCategory(category);
 			
 			
 						
 		//DB저장 및 로깅
 		int items=1;		
-		System.out.print(" "+Launch.count++);
+		Launch.count++;
 		//DB저장
 		if (Launch.enableDB){
 			db.runSQL(art);

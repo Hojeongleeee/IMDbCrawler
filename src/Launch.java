@@ -6,8 +6,10 @@ import java.util.List;
 
 public class Launch {
 	public static int count = 0; //전체 URL 수
+	public static int error = 0;
 	public static String str = "";
 	public static final boolean enableDB = false; //DB저장여부
+	public static final boolean enableWrite = true; //DB저장여부
 	static int hour=3; //반복주기: 3시간마다
 
 	public static void main(String[] args) {
@@ -32,23 +34,34 @@ public class Launch {
 	            urlSet.add(array[0]);
 //	            System.out.println(array[0]);
 	            for (String s : array) {
-	                System.out.print(s + " ");
+//	                System.out.print(s + " ");
 	            }
-	            System.out.print("\n");
+//	            System.out.print("\n");
 	        }
 	        
 	        //Crawl and Save in data (List)
 	        List<String[]> write = new ArrayList<String[]>();
-//			write.add(new String[] {"URL","Title","Content","Like","Dislike","Total","Date","Channel","Channel_URL"});
+			write.add(new String[] {"URL","Title","OriginalTitle","Story","Rate","RateCount","ReleasedDate","Genres","Category"});
 			for (String crawlURL : urlSet){
 				Joongang jn = new Joongang(db);
 				Article art = jn.doParse(crawlURL);
-		        write.add(new String[] {art.getUrl(),art.getTitle(),art.getOriginalTitle(),art.getStory(),art.getRate()+"",""+art.getRateCount(),art.getYear()});
-			}
+		        write.add(new String[] {
+		        		art.getUrl()
+		        		,art.getTitle()
+		        		,art.getOriginalTitle()
+		        		,art.getStory()
+		        		,art.getRate()+""
+		        		,art.getRateCount()+""
+		        		,art.getYear()
+		        		,art.getGenres()
+		        		,art.getCategory()
+		        		}
+		        );
+			}//for
 	   	 	
 			//CSVWrite
 	        CSVWrite cw = new CSVWrite();
-	        cw.writeCsv(write);
+	        if(enableWrite)cw.writeCsv(write);
 			
 			//결과
 			System.out.println("Article:"+count);
